@@ -1,0 +1,55 @@
+services:
+  server:
+    container_name: qtserver
+    build:
+      context: .
+      target: app
+    # depends_on:
+    #   - db
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@qtdb:5432/qt
+      MINIO_ROOT_USER: minio_admin
+      MINIO_ROOT_PASSWORD: minio_admin_password
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+
+  worker:
+    container_name: qtworker
+    build:
+      context: .
+      target: worker
+    depends_on:
+      - redis
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    restart: always
+
+  redis:
+    container_name: qtredis
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  minio:
+    image: minio/minio:latest
+    container_name: qtminio
+    environment:
+      - MINIO_ROOT_USER=minio_admin
+      - MINIO_ROOT_PASSWORD=minio_admin_password
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server --console-address ":9001" /data
+    restart: always
+
+  # db:
+  #   container_name: qtdb
+  #   image: postgres:15
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: qt
+  #   ports:
+  #     - "5432:5432"
