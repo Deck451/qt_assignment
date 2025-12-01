@@ -1,14 +1,9 @@
 # Installation steps
-- clone this repository:
+- clone this repository;
+- start `docker` (if it's not running yet), `cd` inside the local repo directory and build the dockerized service:
     ```bash
-    git clone https://github.com/Deck451/qt_assignment
-    ```
-- change directory:
-    ```bash
+    sudo systemctl start docker
     cd ./qt_assignment
-    ```
-- build the dockerized service:
-    ```bash
     docker-compose up --build
     ```
 
@@ -34,7 +29,7 @@
     curl -X GET "localhost:8000/get-file?name=netflix%20inc&file_type=10-K"
     curl -X GET "localhost:8000/get-file?name=goldman%20sachs%20group%20inc&file_type=10-K&cik=0000886982"
     ```
-
+- current solution makes use of `minio` as file storage, where resulting `.pdf` files are stored under the `sec-filings` bucket;
 - access minio storage:
     ```bash
     http://127.0.0.1:9001
@@ -46,7 +41,7 @@
     docker exec -it qtserver poetry run pytest
     ```
 
-# TODO
+# TODOs / known issues:
 - have a postgres db available and integrate that for further redundancy, in case redis fails;
 - write better tests to be more robust - what if we decide to use a different pdf library?
 - the files as they are now are unusable, maybe some xml parsing library might help before converting them to pdf;
@@ -58,5 +53,6 @@
     it knows about `minio:9000` and the signature is done for this hostname specifically;
     but when trying from the host, obviously there's no such hostname as `minio`, so the link will not work;
 - have the `/get-file` endpoint accept POST requests instead of GET;
+- have the bucket name configurable (`config.py`) instead of the hardcoded value of `sec-filings`;
 - while we're at it, allow ingesting a JSON list of company names, file types and possibly cik ids;
 - offload the conversion / export process to background tasks (Celery), right now, Goldman Sachs' 10-K submission takes 20+ mins to process
